@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blitz-AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #76b900; /* NVIDIA green */
+            --primary-light: #8cd612;
+            --primary-dark: #5a8f00;
+            --secondary-color: #333333;
+            --background-dark: #121212;
+            --card-dark: #1e1e1e;
+            --text-light: #e0e0e0;
+            --text-muted: #999999;
+            --success-color: #76b900;
+            --danger-color: #ff5555;
+            --warning-color: #ffb86c;
+            --white: #ffffff;
+            --black: #000000;
+            --glass-bg: rgba(30, 30, 30, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 4px 10px rgba(118, 185, 0, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Slider colors */
+            --temperature-color: #f97316;
+            --max-tokens-color: #0ea5e9;
+            --top-k-color: #8b5cf6;
+            --top-p-color: #ec4899;
+            --rep-penalty-color: #10b981;
+            --sent-rep-penalty-color: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-light);
+            background: var(--background-dark);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a, #000000);
+            color: var(--white);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--primary-color);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(118, 185, 0, 0.1) 30%);
+            z-index: 1;
+        }
+
+        .header h1 {
+            position: relative;
+            z-index: 2;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+            gap: 20px;
+        }
+
+        .col {
+            flex: 1;
+            padding: 0 15px;
+            min-width: 300px;
+        }
+
+        .card {
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 28px;
+            margin-bottom: 28px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(118, 185, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            margin-bottom: 0;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-btn:hover {
+            background-color: rgba(118, 185, 0, 0.15);
+            transform: scale(1.1);
+        }
+
+        .collapsible-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 1000px;
+            overflow: hidden;
+            opacity: 1;
+        }
+
+        .collapsed .collapsible-content {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        h2 {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        h3 {
+            color: var(--text-light);
+            margin: 16px 0;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(118, 185, 0, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-light);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(118, 185, 0, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--btn-shadow);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(118, 185, 0, 0.4);
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 8px rgba(118, 185, 0, 0.3);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, #445500, #334400);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background-color: rgba(118, 185, 0, 0.15);
+            color: var(--success-color);
+            border: 1px solid rgba(118, 185, 0, 0.3);
+        }
+
+        .alert-danger {
+            background-color: rgba(255, 85, 85, 0.15);
+            color: var(--danger-color);
+            border: 1px solid rgba(255, 85, 85, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            border: 3px solid rgba(118, 185, 0, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        .result {
+            white-space: pre-wrap;
+            border: 1px solid rgba(118, 185, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            min-height: 150px;
+            font-size: 1rem;
+            line-height: 1.7;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            color: var(--text-light);
+        }
+
+        .result:empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .result:empty::before {
+            content: 'Generated text will appear here';
+        }
+
+        .streaming-cursor {
+            display: inline-block;
+            width: 0.6em;
+            height: 1.2em;
+            background-color: var(--primary-color);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+            border-radius: 2px;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 12px;
+            display: none;
+            border-radius: 12px;
+            object-fit: contain;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        #model-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .status-loaded {
+            background-color: rgba(118, 185, 0, 0.15);
+            color: var(--success-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .status-unloaded {
+            background-color: rgba(255, 85, 85, 0.15);
+            color: var(--danger-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .timer {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 6px;
+            position: relative;
+        }
+
+        .slider-container input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #3a3a3a;
+            border-radius: 3px;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Style for the filled part of the slider track */
+        .slider-container input[type="range"]::before {
+            content: '';
+            position: absolute;
+            height: 6px;
+            background: var(--slider-color, var(--primary-color));
+            border-radius: 3px;
+            top: 0;
+            left: 0;
+            width: var(--fill-percent, 50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Temperature slider */
+        .temperature-slider input[type="range"] {
+            --slider-color: var(--temperature-color);
+        }
+        .temperature-slider input[type="range"]::-webkit-slider-thumb {
+            background: var(--temperature-color);
+        }
+        .temperature-slider input[type="range"]::-moz-range-thumb {
+            background: var(--temperature-color);
+        }
+        .temperature-slider .slider-value {
+            color: var(--temperature-color);
+            background: rgba(249, 115, 22, 0.15);
+        }
+
+        /* Max tokens slider */
+        .max-tokens-slider input[type="range"] {
+            --slider-color: var(--max-tokens-color);
+        }
+        .max-tokens-slider input[type="range"]::-webkit-slider-thumb {
+            background: var(--max-tokens-color);
+        }
+        .max-tokens-slider input[type="range"]::-moz-range-thumb {
+            background: var(--max-tokens-color);
+        }
+        .max-tokens-slider .slider-value {
+            color: var(--max-tokens-color);
+            background: rgba(14, 165, 233, 0.15);
+        }
+
+        /* Top-k slider */
+        .top-k-slider input[type="range"] {
+            --slider-color: var(--top-k-color);
+        }
+        .top-k-slider input[type="range"]::-webkit-slider-thumb {
+            background: var(--top-k-color);
+        }
+        .top-k-slider input[type="range"]::-moz-range-thumb {
+            background: var(--top-k-color);
+        }
+        .top-k-slider .slider-value {
+            color: var(--top-k-color);
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        /* Top-p slider */
+        .top-p-slider input[type="range"] {
+            --slider-color: var(--top-p-color);
+        }
+        .top-p-slider input[type="range"]::-webkit-slider-thumb {
+            background: var(--top-p-color);
+        }
+        .top-p-slider input[type="range"]::-moz-range-thumb {
+            background: var(--top-p-color);
+        }
+        .top-p-slider .slider-value {
+            color: var(--top-p-color);
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        /* Repetition penalty slider */
+        .rep-penalty-slider input[type="range"] {
+            --slider-color: var(--rep-penalty-color);
+        }
+        .rep-penalty-slider input[type="range"]::-webkit-slider-thumb {
+            background: var(--rep-penalty-color);
+        }
+        .rep-penalty-slider input[type="range"]::-moz-range-thumb {
+            background: var(--rep-penalty-color);
+        }
+        .rep-penalty-slider .slider-value {
+            color: var(--rep-penalty-color);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        /* Sentence repetition penalty slider */
+        .sent-rep-penalty-slider input[type="range"] {
+            --slider-color: var(--sent-rep-penalty-color);
+        }
+        .sent-rep-penalty-slider input[type="range"]::-webkit-slider-thumb {
+            background: var(--sent-rep-penalty-color);
+        }
+        .sent-rep-penalty-slider input[type="range"]::-moz-range-thumb {
+            background: var(--sent-rep-penalty-color);
+        }
+        .sent-rep-penalty-slider .slider-value {
+            color: var(--sent-rep-penalty-color);
+            background: rgba(234, 179, 8, 0.15);
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 4px;
+            height: 18px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 4px;
+            height: 18px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scaleY(1.2);
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb:hover {
+            transform: scaleY(1.2);
+        }
+
+        .slider-value {
+            min-width: 45px;
+            text-align: center;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .file-upload {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border: 2px dashed rgba(118, 185, 0, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-light);
+            background-color: rgba(118, 185, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .file-upload input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 14px;
+            transition: var(--transition);
+        }
+
+        .file-upload:hover i {
+            transform: scale(1.1);
+        }
+
+        .file-upload p {
+            margin: 0;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 20px;
+            border-top: 1px solid rgba(118, 185, 0, 0.1);
+        }
+
+        .footer span {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+            .col {
+                min-width: 100%;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Tooltip styling */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--black);
+            color: var(--text-light);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            pointer-events: none;
+            z-index: 10;
+            border: 1px solid var(--primary-color);
+        }
+
+        [data-tooltip]::before {
+            content: '';
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translate(-50%, 100%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--primary-color) transparent transparent transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        [data-tooltip]:hover::after,
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Blitz-AI</h1>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <h2><i class="fas fa-robot"></i> Model Selection</h2>
+                    <div class="form-group">
+                        <label for="model-select">Select Model</label>
+                        <select id="model-select" name="model">
+                            {% for model in models %}
+                            <option value="{{ model }}">{{ model }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkpoint-select">Select Checkpoint</label>
+                        <select id="checkpoint-select" name="checkpoint">
+                            <option value="">Loading checkpoints...</option>
+                        </select>
+                    </div>
+                    <button id="load-model-btn" class="btn"><i class="fas fa-download"></i> Load Model</button>
+                    <div id="model-loading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading model, please wait...</p>
+                    </div>
+                    <div class="status-container">
+                        <div id="model-status" class="status-unloaded">
+                            <i class="fas fa-times-circle"></i> No model loaded
+                        </div>
+                    </div>
+                </div>
+
+                <div id="parameters-card" class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-sliders-h"></i> Model Parameters</h2>
+                        <button id="toggle-parameters" class="toggle-btn" title="Toggle parameters">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label for="temperature" data-tooltip="Controls randomness: higher values = more random output">Temperature:</label>
+                            <div class="slider-container temperature-slider">
+                                <input type="range" id="temperature" min="0.1" max="2" step="0.1" value="1.0">
+                                <span id="temperature-value" class="slider-value">1.0</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="max-new-tokens" data-tooltip="Maximum number of tokens to generate">Max New Tokens:</label>
+                            <div class="slider-container max-tokens-slider">
+                                <input type="range" id="max-new-tokens" min="50" max="1000" step="50" value="300">
+                                <span id="max-new-tokens-value" class="slider-value">300</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="top-k" data-tooltip="Limits vocabulary to top K tokens">Top K:</label>
+                            <div class="slider-container top-k-slider">
+                                <input type="range" id="top-k" min="1" max="50" step="1" value="3">
+                                <span id="top-k-value" class="slider-value">3</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="top-p" data-tooltip="Nucleus sampling threshold">Top P:</label>
+                            <div class="slider-container top-p-slider">
+                                <input type="range" id="top-p" min="0.1" max="1" step="0.05" value="0.95">
+                                <span id="top-p-value" class="slider-value">0.95</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="repetition-penalty" data-tooltip="Penalizes repeated tokens">Repetition Penalty:</label>
+                            <div class="slider-container rep-penalty-slider">
+                                <input type="range" id="repetition-penalty" min="1" max="2" step="0.1" value="1.2">
+                                <span id="repetition-penalty-value" class="slider-value">1.2</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sentence-repeat-penalty" data-tooltip="Penalizes repeated sentences">Sentence Repeat Penalty:</label>
+                            <div class="slider-container sent-rep-penalty-slider">
+                                <input type="range" id="sentence-repeat-penalty" min="1" max="2" step="0.1" value="1.2">
+                                <span id="sentence-repeat-penalty-value" class="slider-value">1.2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card">
+                    <h2><i class="fas fa-camera"></i> Image & Prompt</h2>
+                    <div id="alerts"></div>
+                    <div class="form-group">
+                        <label for="image-upload">Upload Image:</label>
+                        <div class="file-upload">
+                            <input type="file" id="image-upload" accept="image/*">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag and drop an image or click to browse</p>
+                        </div>
+                        <img id="image-preview" class="image-preview" src="" alt="Preview">
+                    </div>
+                    <div class="form-group">
+                        <label for="prompt">Prompt:</label>
+                        <textarea id="prompt" rows="3" placeholder="What is in this image?">What is the main subject of this image?</textarea>
+                    </div>
+                    <div class="form-group">
+                        <button id="generate-btn" class="btn" disabled>
+                            <i class="fas fa-magic"></i> Generate
+                        </button>
+                    </div>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Processing, please wait...</p>
+                    </div>
+                    
+                    <h3>Result:</h3>
+                    <div id="result" class="result"></div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Created by <span>Nikhil</span> and <span>Hemanth</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modelSelect = document.getElementById('model-select');
+            const loadModelBtn = document.getElementById('load-model-btn');
+            const modelLoading = document.getElementById('model-loading');
+            const modelStatus = document.getElementById('model-status');
+            const prompt = document.getElementById('prompt');
+            const generateBtn = document.getElementById('generate-btn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const imageUpload = document.getElementById('image-upload');
+            const imagePreview = document.getElementById('image-preview');
+            const toggleParameters = document.getElementById('toggle-parameters');
+            const parametersCard = document.getElementById('parameters-card');
+            
+            // Parameters elements
+            const temperatureSlider = document.getElementById('temperature');
+            const temperatureValue = document.getElementById('temperature-value');
+            const maxNewTokensSlider = document.getElementById('max-new-tokens');
+            const maxNewTokensValue = document.getElementById('max-new-tokens-value');
+            const topKSlider = document.getElementById('top-k');
+            const topKValue = document.getElementById('top-k-value');
+            const topPSlider = document.getElementById('top-p');
+            const topPValue = document.getElementById('top-p-value');
+            const repetitionPenaltySlider = document.getElementById('repetition-penalty');
+            const repetitionPenaltyValue = document.getElementById('repetition-penalty-value');
+            const sentenceRepeatPenaltySlider = document.getElementById('sentence-repeat-penalty');
+            const sentenceRepeatPenaltyValue = document.getElementById('sentence-repeat-penalty-value');
+            
+            // Toggle parameters card
+            toggleParameters.addEventListener('click', function() {
+                parametersCard.classList.toggle('collapsed');
+                const icon = toggleParameters.querySelector('i');
+                if (parametersCard.classList.contains('collapsed')) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+            
+            // Initial fetch of checkpoints
+            fetchCheckpoints();
+            
+            // Function to fetch checkpoints for the selected model
+            function fetchCheckpoints() {
+                const modelName = modelSelect.value;
+                const checkpointSelect = document.getElementById('checkpoint-select');
+                
+                // Clear existing options
+                checkpointSelect.innerHTML = '<option value="">Loading checkpoints...</option>';
+                
+                // Fetch checkpoints from server
+                const formData = new FormData();
+                formData.append('model_name', modelName);
+                
+                fetch('/get_checkpoints', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    checkpointSelect.innerHTML = '';
+                    
+                    if (data.success && data.checkpoints && data.checkpoints.length > 0) {
+                        // Add checkpoints to select
+                        data.checkpoints.forEach(checkpoint => {
+                            const option = document.createElement('option');
+                            option.value = checkpoint;
+                            option.textContent = checkpoint;
+                            checkpointSelect.appendChild(option);
+                        });
+                    } else {
+                        // No checkpoints or error
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No checkpoints available';
+                        checkpointSelect.appendChild(option);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching checkpoints:', error);
+                    checkpointSelect.innerHTML = '<option value="">Error loading checkpoints</option>';
+                });
+            }
+            
+            // Fetch checkpoints when model is selected
+            modelSelect.addEventListener('change', fetchCheckpoints);
+            
+            // Function to update slider fill
+            function updateSliderFill(slider) {
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                const val = parseFloat(slider.value);
+                const percentage = ((val - min) / (max - min)) * 100;
+                slider.style.setProperty('--fill-percent', `${percentage}%`);
+            }
+            
+            // Update all sliders initially
+            document.querySelectorAll('input[type="range"]').forEach(function(slider) {
+                updateSliderFill(slider);
+                
+                // Update on input change
+                slider.addEventListener('input', function() {
+                    updateSliderFill(this);
+                    
+                    // Update corresponding value displays
+                    const valueId = this.id + '-value';
+                    document.getElementById(valueId).textContent = this.value;
+                });
+            });
+            
+            // Update parameter display values and slider fills
+            temperatureSlider.addEventListener('input', function() {
+                temperatureValue.textContent = this.value;
+                updateSliderFill(this);
+            });
+            
+            maxNewTokensSlider.addEventListener('input', function() {
+                maxNewTokensValue.textContent = this.value;
+                updateSliderFill(this);
+            });
+            
+            topKSlider.addEventListener('input', function() {
+                topKValue.textContent = this.value;
+                updateSliderFill(this);
+            });
+            
+            topPSlider.addEventListener('input', function() {
+                topPValue.textContent = this.value;
+                updateSliderFill(this);
+            });
+            
+            repetitionPenaltySlider.addEventListener('input', function() {
+                repetitionPenaltyValue.textContent = this.value;
+                updateSliderFill(this);
+            });
+            
+            sentenceRepeatPenaltySlider.addEventListener('input', function() {
+                sentenceRepeatPenaltyValue.textContent = this.value;
+                updateSliderFill(this);
+            });
+            
+            // Load Model Button
+            loadModelBtn.addEventListener('click', function() {
+                const selectedModel = modelSelect.value;
+                if (!selectedModel) {
+                    alert('Please select a model first.');
+                    return;
+                }
+                
+                loadModelBtn.disabled = true;
+                modelLoading.style.display = 'block';
+                
+                const formData = new FormData();
+                formData.append('model_name', selectedModel);
+                
+                fetch('/load_model', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadModelBtn.disabled = false;
+                    modelLoading.style.display = 'none';
+                    
+                    if (data.success) {
+                        modelStatus.className = 'status-loaded';
+                        modelStatus.innerHTML = '<i class="fas fa-check-circle"></i> ' + selectedModel + ' loaded';
+                        generateBtn.disabled = false;
+                        
+                        // Show success message
+                        showAlert('success', data.message || 'Model loaded successfully.');
+                    } else {
+                        modelStatus.className = 'status-unloaded';
+                        modelStatus.innerHTML = '<i class="fas fa-times-circle"></i> Load failed';
+                        generateBtn.disabled = true;
+                        
+                        // Show error message
+                        showAlert('danger', data.message || 'Failed to load model.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading model:', error);
+                    loadModelBtn.disabled = false;
+                    modelLoading.style.display = 'none';
+                    modelStatus.className = 'status-unloaded';
+                    modelStatus.innerHTML = '<i class="fas fa-times-circle"></i> Error';
+                    generateBtn.disabled = true;
+                    
+                    showAlert('danger', 'Error loading model: ' + error.message);
+                });
+            });
+            
+            // Generate button
+            generateBtn.addEventListener('click', function() {
+                if (!imageUpload.files || imageUpload.files.length === 0) {
+                    showAlert('danger', 'Please upload an image.');
+                    return;
+                }
+                
+                loading.style.display = 'block';
+                result.innerHTML = '';
+                generateBtn.disabled = true;
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('prompt', prompt.value);
+                formData.append('image', imageUpload.files[0]);
+                formData.append('temperature', temperatureSlider.value);
+                formData.append('max_new_tokens', maxNewTokensSlider.value);
+                formData.append('top_k', topKSlider.value);
+                formData.append('top_p', topPSlider.value);
+                formData.append('repetition_penalty', repetitionPenaltySlider.value);
+                formData.append('sentence_repeat_penalty', sentenceRepeatPenaltySlider.value);
+                
+                // Add checkpoint selection if present
+                const checkpointValue = document.getElementById('checkpoint-select').value;
+                if (checkpointValue) {
+                    formData.append('checkpoint', checkpointValue);
+                }
+                
+                // Use streaming response
+                const cursor = document.createElement('span');
+                cursor.className = 'streaming-cursor';
+                result.appendChild(cursor);
+                
+                fetch('/generate_stream', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    function readStream() {
+                        reader.read().then(({ done, value }) => {
+                            if (done) {
+                                loading.style.display = 'none';
+                                generateBtn.disabled = false;
+                                cursor.remove();
+                                return;
+                            }
+                            
+                            const text = decoder.decode(value, {stream: true});
+                            const lines = text.split('\n').filter(line => line.trim());
+                            
+                            lines.forEach(line => {
+                                try {
+                                    const data = JSON.parse(line);
+                                    
+                                    if (data.token) {
+                                        // Insert before the cursor
+                                        const textNode = document.createTextNode(data.token);
+                                        result.insertBefore(textNode, cursor);
+                                    }
+                                    
+                                    if (data.done) {
+                                        loading.style.display = 'none';
+                                        generateBtn.disabled = false;
+                                        cursor.remove();
+                                        return;
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing stream data:', e);
+                                }
+                            });
+                            
+                            readStream();
+                        }).catch(error => {
+                            console.error('Error reading stream:', error);
+                            loading.style.display = 'none';
+                            generateBtn.disabled = false;
+                            cursor.remove();
+                            showAlert('danger', 'Error reading response: ' + error.message);
+                        });
+                    }
+                    
+                    readStream();
+                })
+                .catch(error => {
+                    console.error('Error generating response:', error);
+                    loading.style.display = 'none';
+                    generateBtn.disabled = false;
+                    showAlert('danger', 'Error generating response: ' + error.message);
+                });
+            });
+            
+            // Image Upload Preview
+            imageUpload.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.style.display = 'block';
+                        imagePreview.src = e.target.result;
+                        
+                        // Enable generate button if model is loaded
+                        if (modelStatus.classList.contains('status-loaded')) {
+                            generateBtn.disabled = false;
+                        }
+                    };
+                    
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    imagePreview.style.display = 'none';
+                    generateBtn.disabled = true;
+                }
+            });
+            
+            // Function to show alerts
+            function showAlert(type, message) {
+                const alertsContainer = document.getElementById('alerts');
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-' + type;
+                
+                if (type === 'success') {
+                    alert.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+                } else if (type === 'danger') {
+                    alert.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+                }
+                
+                alertsContainer.appendChild(alert);
+                
+                // Remove alert after 5 seconds
+                setTimeout(() => {
+                    alert.classList.add('fadeOut');
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 300);
+                }, 5000);
+            }
+            
+            // Check model status on page load
+            function checkModelStatus() {
+                fetch('/check_model_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.loaded) {
+                            modelStatus.className = 'status-loaded';
+                            modelStatus.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.model_name + ' loaded';
+                            
+                            // Enable generate button if an image is uploaded
+                            if (imageUpload.files && imageUpload.files.length > 0) {
+                                generateBtn.disabled = false;
+                            }
+                        } else {
+                            modelStatus.className = 'status-unloaded';
+                            modelStatus.innerHTML = '<i class="fas fa-times-circle"></i> No model loaded';
+                            generateBtn.disabled = true;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking model status:', error);
+                    });
+            }
+            
+            // Check model status on page load and periodically
+            checkModelStatus();
+            setInterval(checkModelStatus, 30000);
+        });
+    </script>
+</body>
+</html>
+
+
